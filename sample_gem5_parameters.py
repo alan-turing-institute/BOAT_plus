@@ -78,7 +78,7 @@ def process_sample(params):
 
 if __name__ == "__main__":
 
-    NO_WORKERS = 4
+    NO_WORKERS = 1
     selected_params = ['enable_l2', 'tlb_miss_latency']
     # , 'tlb_page_size', 'tlb_assoc', 'tlb_bandwidth', 'tlb_max_outstanding_walks']
 
