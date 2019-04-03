@@ -72,13 +72,13 @@ def process_sample(params):
 
     
 
-    print(params)
+    result = gem5.main(params)
 
-    try:
-        result = gem5.main(params)
-    except:
-        result = False
-        
+    # try:
+    #     result = gem5.main(params)
+    # except:
+    #     result = False
+
     return result
 
 if __name__ == "__main__":
