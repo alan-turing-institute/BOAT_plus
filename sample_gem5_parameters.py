@@ -70,14 +70,10 @@ def process_sample(params):
 
     """
 
-    
-
-    result = gem5.main(params)
-
-    # try:
-    #     result = gem5.main(params)
-    # except:
-    #     result = False
+    try:
+        result = gem5.main(params)
+    except:
+        result = {}
 
     return result
 
