@@ -138,7 +138,7 @@ def main(sim_params, sim_output_dir=_SIM_OUTPUT_DIR, bench_name=_DEFAULT_BENCH):
     # template file
     header_file_name = "{}{}".format("t_", str(uuid.uuid4()))
     header_file_path = os.path.join(_GEM5_SWEEPS_BENCH_PATH, header_file_name)
-    print(header_file_path)
+ 
     # Preparing input input file for the simulator
     create_header_from_template(sim_params, header_file_path, sim_output_dir)
 

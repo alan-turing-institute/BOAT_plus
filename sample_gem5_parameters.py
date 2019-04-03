@@ -70,13 +70,11 @@ def process_sample(params):
 
     """
 
-    gem5.main(params)
+    
 
     print(params)
-    time.sleep(1)
-    #gem5.main()
 
-    return 0.0
+    return gem5.main(params)
 
 if __name__ == "__main__":
 
