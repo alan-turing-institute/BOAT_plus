@@ -9,6 +9,7 @@ import itertools
 from multiprocessing import Pool
 import time
 import sys
+import copy
 
 sys.path.append("./")
 
@@ -70,12 +71,14 @@ def process_sample(params):
 
     """
 
+    params_cpy = copy.copy(params)
+
     try:
         result = gem5.main(params)
     except:
         result = {}
 
-    return {**params, **result}
+    return params_cpy.update(result)
 
 if __name__ == "__main__":
 
