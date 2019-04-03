@@ -75,10 +75,12 @@ def process_sample(params):
 
     try:
         result = gem5.main(params)
+        params_cpy.update(result)
+        params_cpy.update({"success":True})
     except:
         result = {}
-
-    return params_cpy.update(result)
+        params_cpy.update({"success":False})
+    return params_cpy
 
 if __name__ == "__main__":
 
