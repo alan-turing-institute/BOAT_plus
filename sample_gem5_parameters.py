@@ -75,7 +75,7 @@ def process_sample(params):
     except:
         result = {}
 
-    return result
+    return {**params, **result}
 
 if __name__ == "__main__":
 
