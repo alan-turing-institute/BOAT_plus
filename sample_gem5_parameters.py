@@ -84,7 +84,8 @@ def process_sample(params):
 
 if __name__ == "__main__":
 
-    NO_WORKERS = 4
+    # At the moment it is impossible to run multiple gem5-aladdin instances
+    NO_WORKERS = 1
     selected_params = ['enable_l2', 'tlb_miss_latency']
     # , 'tlb_page_size', 'tlb_assoc', 'tlb_bandwidth', 'tlb_max_outstanding_walks']
 
