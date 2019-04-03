@@ -64,7 +64,8 @@ def sampling(selected_params, samples, no_workers):
 
     result_cnt = 0
     for result in results:
-
+        print(result)
+        
         if result_cnt > 0:
             write_to_file("results.csv", result)
         else:
