@@ -10,6 +10,7 @@ from multiprocessing import Pool
 import time
 import sys
 import copy
+import json
 
 sys.path.append("./")
 
@@ -61,8 +62,15 @@ def sampling(selected_params, samples, no_workers):
     pool = Pool(processes=no_workers)
     results = pool.imap(process_sample, samples_splits)
 
+    result_cnt = 0
     for result in results:
-        print (result)
+
+        if result_cnt > 0:
+            write_to_file("results.csv", result)
+        else:
+            write_to_file("results.csv", result, add_head=True, overwrite=True)
+
+        result_cnt += 1
 
     return
 
@@ -81,6 +89,48 @@ def process_sample(params):
         result = {}
         params_cpy.update({"success":False})
     return params_cpy
+
+def write_to_file(file_name, dict, add_head=False, overwrite=False):
+    """Writes dictionary results to a file
+
+    Args:
+        file_name: results file
+        dict: results dictionary
+        add_head: flag to add headings
+        overwrite: flag to overwrite
+    """
+
+    if overwrite:
+        f = open(file_name, "w")
+    else:
+        f = open(file_name, "a")
+
+    if add_head:
+        head_str = ""
+
+        key_cnt = 0
+        for key, val in dict.items():
+            if key_cnt > 0:
+                head_str = "{},".format(head_str)
+
+            head_str = "{}{}".format(head_str, key)
+            key_cnt += 1
+
+        f.write("{}\n".format(head_str))
+
+    value_str = ""
+
+    key_cnt = 0
+    for key, val in dict.items():
+        if key_cnt > 0:
+            value_str = "{},".format(value_str)
+
+        value_str = "{}{}".format(value_str, str(val))
+        key_cnt += 1
+
+    f.write("{}\n".format(value_str))
+
+    f.close()
 
 if __name__ == "__main__":
 
