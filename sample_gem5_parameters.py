@@ -39,12 +39,12 @@ _AVAILABLE_PARAMS = {
 def sampling(selected_params, samples, no_workers):
     """Performs sampling.
 
-    Performs sampling over the given samples. The method utilizes a pool of 
-        workers approach for parallelization. 
-    
+    Performs sampling over the given samples. The method utilizes a pool of
+        workers approach for parallelization.
+
     Args:
         selected_params: labels of the selected parameters
-        samples: a matrix with parameter values 
+        samples: a matrix with parameter values
         no_workers: a number of workers in the pool
 
     """
@@ -56,7 +56,7 @@ def sampling(selected_params, samples, no_workers):
         params = {}
         for p, v in zip(selected_params, samples[i]):
             params[p] = v
-        
+
         samples_splits.append(params)
 
     pool = Pool(processes=no_workers)
@@ -65,7 +65,7 @@ def sampling(selected_params, samples, no_workers):
     result_cnt = 0
     for result in results:
         print(result)
-        
+
         if result_cnt > 0:
             write_to_file("results.csv", result)
         else:
@@ -137,18 +137,22 @@ if __name__ == "__main__":
 
     # At the moment it is impossible to run multiple gem5-aladdin instances
     NO_WORKERS = 1
-    selected_params = ['enable_l2', 'tlb_miss_latency']
-    # , 'tlb_page_size', 'tlb_assoc', 'tlb_bandwidth', 'tlb_max_outstanding_walks']
-
-    #selected_params = ['pipelining', 'pipelined_dma', 'enable_l2', 'cache_queue_size', 'cache_size', 'cache_assoc', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
+    
+    # 1.
+    # selected_params = ['enable_l2', 'tlb_miss_latency', 'tlb_page_size', 'tlb_assoc', 'tlb_bandwidth', 'tlb_max_outstanding_walks']
+    
+    # 2.
+    # selected_params = ['pipelining', 'pipelined_dma', 'enable_l2', 'cache_queue_size', 'cache_size', 'cache_assoc', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
+    
+    # 3. First attempt, removing enable_l2 as it fails and 'pipelining', 'pipelined_dma', 
+    selected_params = ['cache_queue_size', 'cache_size', 'cache_assoc', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
+    
     grid = np.array(list(itertools.product(*[_AVAILABLE_PARAMS[p] for p in selected_params])))
 
     # random shuffle of paramters
     np.random.shuffle(grid)
-    
+
     # performs random sampling
     sampling(selected_params, grid, NO_WORKERS)
 
     print("Finished.")
-
-
