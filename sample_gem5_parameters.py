@@ -144,10 +144,12 @@ if __name__ == "__main__":
     # 2.
     # selected_params = ['pipelining', 'pipelined_dma', 'enable_l2', 'cache_queue_size', 'cache_size', 'cache_assoc', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
     
-    # 3. First attempt, removing enable_l2 as it fails and 'pipelining', 'pipelined_dma', 
-    selected_params = ['cache_queue_size', 'cache_size', 'cache_assoc', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
+    # 3. First attempt, removing enable_l2 as it fails and 'pipelining', 'pipelined_dma', 'cache_assoc', 
+    selected_params = ['cache_queue_size', 'cache_size', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
     
     grid = np.array(list(itertools.product(*[_AVAILABLE_PARAMS[p] for p in selected_params])))
+
+    print("Total number of samples: {}".format(str(len(grid))))
 
     # random shuffle of paramters
     np.random.shuffle(grid)
