@@ -137,16 +137,20 @@ if __name__ == "__main__":
 
     # At the moment it is impossible to run multiple gem5-aladdin instances
     NO_WORKERS = 1
-    
+
     # 1.
     # selected_params = ['enable_l2', 'tlb_miss_latency', 'tlb_page_size', 'tlb_assoc', 'tlb_bandwidth', 'tlb_max_outstanding_walks']
-    
+
     # 2.
     # selected_params = ['pipelining', 'pipelined_dma', 'enable_l2', 'cache_queue_size', 'cache_size', 'cache_assoc', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
-    
-    # 3. First attempt, removing enable_l2 as it fails and 'pipelining', 'pipelined_dma', 'cache_assoc', 
-    selected_params = ['cache_queue_size', 'cache_size', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
-    
+
+    # 3. First study, removing enable_l2 as it fails and 'pipelining', 'pipelined_dma', 'cache_assoc',
+    # selected_params = ['cache_queue_size', 'cache_size', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
+
+    # 4. Second study
+    selected_params = ['cycle_time', 'pipelining', 'pipelined_dma', 'cache_assoc']
+
+
     grid = np.array(list(itertools.product(*[_AVAILABLE_PARAMS[p] for p in selected_params])))
 
     print("Total number of samples: {}".format(str(len(grid))))
