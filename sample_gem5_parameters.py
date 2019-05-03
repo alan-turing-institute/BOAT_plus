@@ -36,7 +36,7 @@ _AVAILABLE_PARAMS = {
     'cache_bandwidth': range(4, 17)
 }
 
-def sampling(selected_params, samples, no_workers):
+def sampling(selected_params, samples, no_workers, results_file="results.csv"):
     """Performs sampling.
 
     Performs sampling over the given samples. The method utilizes a pool of
@@ -46,6 +46,7 @@ def sampling(selected_params, samples, no_workers):
         selected_params: labels of the selected parameters
         samples: a matrix with parameter values
         no_workers: a number of workers in the pool
+        results_file:
 
     """
 
@@ -67,9 +68,9 @@ def sampling(selected_params, samples, no_workers):
         print(result)
 
         if result_cnt > 0:
-            write_to_file("results.csv", result)
+            write_to_file(results_file, result)
         else:
-            write_to_file("results.csv", result, add_head=True, overwrite=True)
+            write_to_file(results_file, result, add_head=True, overwrite=True)
 
         result_cnt += 1
 
@@ -133,23 +134,13 @@ def write_to_file(file_name, dict, add_head=False, overwrite=False):
 
     f.close()
 
-if __name__ == "__main__":
+def prep_and_run_samples(selected_params, results_file):
+    """Prepares and runs samples
 
-    # At the moment it is impossible to run multiple gem5-aladdin instances
-    NO_WORKERS = 1
-
-    # 1.
-    # selected_params = ['enable_l2', 'tlb_miss_latency', 'tlb_page_size', 'tlb_assoc', 'tlb_bandwidth', 'tlb_max_outstanding_walks']
-
-    # 2.
-    # selected_params = ['pipelining', 'pipelined_dma', 'enable_l2', 'cache_queue_size', 'cache_size', 'cache_assoc', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
-
-    # 3. First study, removing enable_l2 as it fails and 'pipelining', 'pipelined_dma', 'cache_assoc',
-    # selected_params = ['cache_queue_size', 'cache_size', 'cache_hit_latency', 'cache_line_sz', 'cache_bandwidth']
-
-    # 4. Second study
-    selected_params = ['cycle_time', 'pipelining', 'pipelined_dma', 'cache_assoc']
-
+    Args:
+        selected_params:
+        results_file:
+    """
 
     grid = np.array(list(itertools.product(*[_AVAILABLE_PARAMS[p] for p in selected_params])))
 
@@ -159,6 +150,30 @@ if __name__ == "__main__":
     np.random.shuffle(grid)
 
     # performs random sampling
-    sampling(selected_params, grid, NO_WORKERS)
+    sampling(selected_params, grid, NO_WORKERS, results_file)
+
+if __name__ == "__main__":
+
+    # At the moment it is impossible to run multiple gem5-aladdin instances, thus NO_WORKERS = 1
+    NO_WORKERS = 1
+    def_results_file = "results.csv"
+
+    single_param_mode = True
+
+    if single_param_mode:
+
+        for avail_param_key in _AVAILABLE_PARAMS.keys():
+
+            selected_params = [avail_param_key]
+            results_file = avail_param_key + "_" + def_results_file
+
+            prep_and_run_samples(selected_params, results_file)
+
+    else:
+        # TODO: this is not the correct place to list parameters
+        selected_params = ['cycle_time', 'pipelining', 'pipelined_dma', 'cache_assoc']
+
+        prep_and_run_samples(selected_params, def_results_file)
+
 
     print("Finished.")
