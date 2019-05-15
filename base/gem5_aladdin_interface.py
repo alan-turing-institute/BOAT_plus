@@ -11,8 +11,14 @@ import uuid
 
 # A list of available accelerator parameters
 _AVAILABLE_PARAMS = [
+    # Core
     'cycle_time',
     'pipelining',
+    'unrolling',
+    'partition_factor',
+    'partition_type'
+    'memory_type',
+    # Cache
     'cache_size',
     'cache_assoc',
     'cache_hit_latency',
@@ -27,10 +33,18 @@ _AVAILABLE_PARAMS = [
     'tlb_assoc',
     'tlb_bandwidth',
     'l2cache_size',
+    'perfect_l1'
+    'perfect_bus'
     'enable_l2',
+    # DMA
     'pipelined_dma',
-    'ready_mode from',
-    'ignore_cache_flush'
+    'dma_setup_overhead',
+    'max_dma_requests',
+    'dma_chunk_size',
+    'ready_mode',
+    'dma_multi_channel',
+    'ignore_cache_flush',
+    'invalidate_on_dma_store'
 ]
 
 # get the paths to aladdin, gem5 and other submodules
@@ -119,7 +133,7 @@ def collect_result(results_file_path):
     area = float(area[0])
 
     results['area'] = area
-    
+
     return results
 
 def main(sim_params, sim_output_dir=_SIM_OUTPUT_DIR, bench_name=_DEFAULT_BENCH):
@@ -138,7 +152,7 @@ def main(sim_params, sim_output_dir=_SIM_OUTPUT_DIR, bench_name=_DEFAULT_BENCH):
     # template file
     header_file_name = "{}{}".format("t_", str(uuid.uuid4()))
     header_file_path = os.path.join(_GEM5_SWEEPS_BENCH_PATH, header_file_name)
- 
+
     # Preparing input input file for the simulator
     create_header_from_template(sim_params, header_file_path, sim_output_dir)
 
@@ -148,10 +162,10 @@ def main(sim_params, sim_output_dir=_SIM_OUTPUT_DIR, bench_name=_DEFAULT_BENCH):
     _CWD = os.getcwd()
     os.chdir(_GEM5_SWEEPS_PATH)
 
-    # Preparating the benchmarks 
+    # Preparating the benchmarks
     # TODO: (currently preparaes all the benchmarks, do we need only specific one, e.g. fft_transpose)
     # TODO: python2 needs to be python?
-    os.system('python2 %s %s' % (_GEM5_SWEEPS_DESIGN_PY_PATH, 
+    os.system('python2 %s %s' % (_GEM5_SWEEPS_DESIGN_PY_PATH,
                                  os.path.join(_GEM5_BENCH_DIR_NAME, header_file_name)))
 
     os.chdir(_CWD)
@@ -168,7 +182,7 @@ def main(sim_params, sim_output_dir=_SIM_OUTPUT_DIR, bench_name=_DEFAULT_BENCH):
     os.system('sh run.sh')
 
     os.chdir(_CWD)
-    
+
     # Collecting the results from the simululation run
     results_file_path = os.path.join(bench_path, _BENCH_OUT_FILE)
 
@@ -180,30 +194,29 @@ if __name__ == "__main__":
 
     # Setting up the argument parser
     parser = argparse.ArgumentParser(description='Run gem5-alladin benchmark')
-    parser.add_argument('sim_params', type=str, 
+    parser.add_argument('sim_params', type=str,
                         help='Parameters for the simulator as string representation of a Python dict')
     parser.add_argument('results_key', type=str, choices=['cycle', 'power', 'area'],
                         help='Key value of a targeted accelerator specification')
     parser.add_argument('--results_file', type=str, default=_DEFAULT_RESULT_FILE,
                         help='Filename to save the results.')
-                         
-    args = parser.parse_args()
-    
-    _PARAMS = eval(args.sim_params)    
 
-    # execute the benchmark with the simulator. If it fails at somepoint 
+    args = parser.parse_args()
+
+    _PARAMS = eval(args.sim_params)
+
+    # execute the benchmark with the simulator. If it fails at somepoint
     #  return an empty result.
     try:
         results = main(_PARAMS)
     except:
         results = {}
-        
+
     # saving the results that BOAT could read in
     with open(_DEFAULT_RESULT_FILE, "w") as res_file:
         if not results:
             res_file.write(str(0.0))
         else:
             res_file.write(str(results[args.results_key]))
-            
+
     # TODO: do we need to clean up _SIM_OUTPUT_DIR ?
-    
