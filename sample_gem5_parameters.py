@@ -219,7 +219,7 @@ if __name__ == "__main__":
     NO_WORKERS = 1
     def_results_file = "results.csv"
     single_param_mode = False
-    no_of_random_samples = 5
+    no_of_random_samples = 5000
     unique_saples = True
 
     if single_param_mode:
