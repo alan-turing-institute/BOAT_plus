@@ -190,7 +190,7 @@ def prep_and_run_samples(selected_params, results_file, randomise=True,
 
         no_of_params = len(selected_params)
 
-        grid = np.empty((no_of_random_samples, no_of_params), dtype=np.int16)
+        grid = np.empty((no_of_random_samples, no_of_params), dtype=np.int32)
 
         for i in range(no_of_random_samples):
             for j in range(no_of_params):
@@ -234,6 +234,7 @@ if __name__ == "__main__":
     else:
         # TODO: this is not the correct place to list parameters
         selected_params = list(_AVAILABLE_PARAMS.keys())
+        #selected_params = ['cache_size', 'cache_assoc']
 
         prep_and_run_samples(selected_params, def_results_file,
                 no_of_random_samples=no_of_random_samples, unique_saples=unique_saples)
