@@ -11,6 +11,7 @@ import time
 import sys
 import copy
 import json
+import random
 
 sys.path.append("./")
 
@@ -127,6 +128,7 @@ def process_sample(params):
     except:
         result = {}
         params_cpy.update({"success":False})
+
     return params_cpy
 
 def write_to_file(file_name, dict, add_head=False, overwrite=False):
@@ -171,20 +173,42 @@ def write_to_file(file_name, dict, add_head=False, overwrite=False):
 
     f.close()
 
-def prep_and_run_samples(selected_params, results_file):
+def prep_and_run_samples(selected_params, results_file, randomise=True,
+    no_of_random_samples=None, unique_saples=False):
+
     """Prepares and runs samples
 
     Args:
         selected_params:
         results_file:
+        randomise: a flag to randomise grid lines
+        no_of_random_samples: a fixed number of samples to be evaluated
+        unique_saples: enforce uniqueness of samples
     """
 
-    grid = np.array(list(itertools.product(*[_AVAILABLE_PARAMS[p] for p in selected_params])))
+    if no_of_random_samples is not None:
+
+        no_of_params = len(selected_params)
+
+        grid = np.empty((no_of_random_samples, no_of_params), dtype=np.int16)
+
+        for i in range(no_of_random_samples):
+            for j in range(no_of_params):
+                param = _AVAILABLE_PARAMS[selected_params[j]]
+
+                grid[i][j] = random.choice(param)
+
+        if unique_saples:
+            grid = np.unique(grid, axis=0)
+
+    else:
+        grid = np.array(list(itertools.product(*[_AVAILABLE_PARAMS[p] for p in selected_params])))
+
+        if randomise:
+            # random shuffle of paramters
+            np.random.shuffle(grid)
 
     print("Total number of samples: {}".format(str(len(grid))))
-
-    # random shuffle of paramters
-    np.random.shuffle(grid)
 
     # performs random sampling
     sampling(selected_params, grid, NO_WORKERS, results_file)
@@ -194,8 +218,9 @@ if __name__ == "__main__":
     # At the moment it is impossible to run multiple gem5-aladdin instances, thus NO_WORKERS = 1
     NO_WORKERS = 1
     def_results_file = "results.csv"
-
-    single_param_mode = True
+    single_param_mode = False
+    no_of_random_samples = 5
+    unique_saples = True
 
     if single_param_mode:
 
@@ -208,9 +233,9 @@ if __name__ == "__main__":
 
     else:
         # TODO: this is not the correct place to list parameters
-        selected_params = ['cycle_time', 'pipelining', 'pipelined_dma', 'cache_assoc']
+        selected_params = list(_AVAILABLE_PARAMS.keys())
 
-        prep_and_run_samples(selected_params, def_results_file)
-
+        prep_and_run_samples(selected_params, def_results_file,
+                no_of_random_samples=no_of_random_samples, unique_saples=unique_saples)
 
     print("Finished.")
