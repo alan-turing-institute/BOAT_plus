@@ -74,6 +74,8 @@ _AVAILABLE_PARAMS = {
     # invalidate_on_dma_store = BoolParam("invalidate_on_dma_store", True)
 }
 
+_RESULTS_PARAMS = ['success','cycle', 'power', 'area']
+
 def sampling(selected_params, samples, no_workers, results_file="results.csv"):
     """Performs sampling.
 
@@ -103,12 +105,12 @@ def sampling(selected_params, samples, no_workers, results_file="results.csv"):
 
     result_cnt = 0
     for result in results:
-        print(result)
+        #print(result)
 
         if result_cnt > 0:
-            write_to_file(results_file, result)
+            write_to_file(results_file, result, selected_params)
         else:
-            write_to_file(results_file, result, add_head=True, overwrite=True)
+            write_to_file(results_file, result, selected_params, add_head=True, overwrite=True)
 
         result_cnt += 1
 
@@ -129,14 +131,19 @@ def process_sample(params):
         result = {}
         params_cpy.update({"success":False})
 
+        # setting result values as false
+        for res_param in _RESULTS_PARAMS:
+            params_cpy.update({res_param:False})
+
     return params_cpy
 
-def write_to_file(file_name, dict, add_head=False, overwrite=False):
+def write_to_file(file_name, res_dict, selected_params, add_head=False, overwrite=False):
     """Writes dictionary results to a file
 
     Args:
         file_name: results file
-        dict: results dictionary
+        res_dict: results dictionary
+        selected_params: list of sampled parameters
         add_head: flag to add headings
         overwrite: flag to overwrite
     """
@@ -146,32 +153,45 @@ def write_to_file(file_name, dict, add_head=False, overwrite=False):
     else:
         f = open(file_name, "a")
 
+    # adds header for the results file
     if add_head:
-        head_str = ""
-
-        key_cnt = 0
-        for key, val in dict.items():
-            if key_cnt > 0:
-                head_str = "{},".format(head_str)
-
-            head_str = "{}{}".format(head_str, key)
-            key_cnt += 1
+        head_str = ','.join([','.join(selected_params), ','.join(_RESULTS_PARAMS)])
 
         f.write("{}\n".format(head_str))
+
+    # parameters' values + simulation results
+    values_str = ','.join([list_dict_values(res_dict, selected_params), 
+        list_dict_values(res_dict, _RESULTS_PARAMS)])
+
+    f.write("{}\n".format(values_str))
+
+    f.close()
+
+def list_dict_values(res_dict, keyword_list):
+    """Forms a string listing values from a dictionary with respect to a keyword list
+
+    Args:
+        res_dict: results dictionary
+        keyword_list: a list of keywords
+
+    Returns:
+        value_str: a string listing values from a dictionary
+    """
 
     value_str = ""
 
     key_cnt = 0
-    for key, val in dict.items():
+    for keyword in keyword_list:
+
+        val = res_dict[keyword]
+
         if key_cnt > 0:
             value_str = "{},".format(value_str)
 
         value_str = "{}{}".format(value_str, str(val))
         key_cnt += 1
 
-    f.write("{}\n".format(value_str))
-
-    f.close()
+    return value_str
 
 def prep_and_run_samples(selected_params, results_file, randomise=True,
     no_of_random_samples=None, unique_saples=False):
@@ -213,13 +233,24 @@ def prep_and_run_samples(selected_params, results_file, randomise=True,
     # performs random sampling
     sampling(selected_params, grid, NO_WORKERS, results_file)
 
+def list_parameters(values_list):
+
+    key_cnt = 0
+        
+    for key, val in dict.items():
+        if key_cnt > 0:
+            head_str = "{},".format(head_str)
+
+        head_str = "{}{}".format(head_str, key)
+        key_cnt += 1
+
 if __name__ == "__main__":
 
     # At the moment it is impossible to run multiple gem5-aladdin instances, thus NO_WORKERS = 1
     NO_WORKERS = 1
     def_results_file = "results.csv"
     single_param_mode = False
-    no_of_random_samples = 5000
+    no_of_random_samples = 10
     unique_saples = True
 
     if single_param_mode:
