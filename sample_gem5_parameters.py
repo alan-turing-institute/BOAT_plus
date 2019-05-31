@@ -18,60 +18,78 @@ sys.path.append("./")
 from base import gem5_aladdin_interface as gem5
 
 _AVAILABLE_PARAMS = {
-    ############################################################################
-    # Core Aladdin parameters.
-    'cycle_time': range(1, 6),
-    'pipelining': [0, 1],
-    #
-    # Parameters that are not being used
-    #   copied from alladin to show the default values being used
-    #
-    # unrolling = IntParam("unrolling", 1)
-    # partition_factor = IntParam("partition_factor", 1)
-    # partition_type = StrParam("partition_type", CYCLIC,
-    #                             valid_opts=[COMPLETE, CYCLIC, BLOCK])
-    # Parameters that are not being used
-    # memory_type = StrParam("memory_type", SPAD, valid_opts=[SPAD, CACHE])
-    #
-    ############################################################################
-    # Cache memory system parameters.
-    ############################################################################
-    'cache_size': [16384, 32768, 65536, 131072],
-    'cache_assoc': [1, 2, 4, 8, 16],
-    'cache_hit_latency': range(1, 5),
-    'cache_line_sz': [16, 32, 64],
-    'cache_queue_size': [32, 64, 128],
-    'cache_bandwidth': range(4, 17),
-    'tlb_hit_latency': range(1, 5),
-    'tlb_miss_latency': range(10, 21),
-    'tlb_page_size': [4096, 8192],
-    'tlb_entries': range(17),
-    'tlb_max_outstanding_walks': [4, 8],
+
+    'tlb_page_size': [4096],
+    'tlb_entries': [5],
     'tlb_assoc': [4, 8, 16],
-    'tlb_bandwidth': [1, 2],
-    #
-    # Parameters that are not being used
-    #   copied from alladin to show the default values being used
-    #
-    # l2cache_size = IntParam("l2cache_size", 128*1024, format_func=intToShortSize)
-    # perfect_l1 = IntParam("perfect_l1", 0)
-    # perfect_bus = IntParam("perfect_bus", 0)
-    # enable_l2 = IntParam("enable_l2", 0)
-    ############################################################################
-    # DMA settings.
-    ############################################################################
-    'pipelined_dma': [0, 1]
-    #
-    # Parameters that are not being used
-    #   copied from alladin to show the default values being used
-    #
-    # dma_setup_overhead = IntParam("dma_setup_overhead", 30)
-    # max_dma_requests = IntParam("max_dma_requests", 40)
-    # dma_chunk_size = IntParam("dma_chunk_size", 64)
-    # ready_mode = IntParam("ready_mode", 0)
-    # dma_multi_channel = IntParam("dma_multi_channel", 0)
-    # ignore_cache_flush = IntParam("ignore_cache_flush", 0)
-    # invalidate_on_dma_store = BoolParam("invalidate_on_dma_store", True)
+    'cycle_time': [4],
+    'tlb_max_outstanding_walks': [8],
+    'tlb_miss_latency': [13],
+    'cache_line_sz': [32],
+    'cache_assoc': [1],
+    'cache_queue_size': [32],
+    'tlb_hit_latency': [2],
+    'pipelined_dma': [0],
+    'cache_size': [32768],
+    'pipelining': [0],
+    'cache_hit_latency': [1],
+    'cache_bandwidth': [13],
+    'tlb_bandwidth': [2]
+
+    # ############################################################################
+    # # Core Aladdin parameters.
+    # 'cycle_time': range(1, 6),
+    # 'pipelining': [0, 1],
+    # #
+    # # Parameters that are not being used
+    # #   copied from alladin to show the default values being used
+    # #
+    # # unrolling = IntParam("unrolling", 1)
+    # # partition_factor = IntParam("partition_factor", 1)
+    # # partition_type = StrParam("partition_type", CYCLIC,
+    # #                             valid_opts=[COMPLETE, CYCLIC, BLOCK])
+    # # Parameters that are not being used
+    # # memory_type = StrParam("memory_type", SPAD, valid_opts=[SPAD, CACHE])
+    # #
+    # ############################################################################
+    # # Cache memory system parameters.
+    # ############################################################################
+    # 'cache_size': [16384, 32768, 65536, 131072],
+    # 'cache_assoc': [1, 2, 4, 8, 16],
+    # 'cache_hit_latency': range(1, 5),
+    # 'cache_line_sz': [16, 32, 64],
+    # 'cache_queue_size': [32, 64, 128],
+    # 'cache_bandwidth': range(4, 17),
+    # 'tlb_hit_latency': range(1, 5),
+    # 'tlb_miss_latency': range(10, 21),
+    # 'tlb_page_size': [4096, 8192],
+    # 'tlb_entries': range(17),
+    # 'tlb_max_outstanding_walks': [4, 8],
+    # 'tlb_assoc': [4, 8, 16],
+    # 'tlb_bandwidth': [1, 2],
+    # #
+    # # Parameters that are not being used
+    # #   copied from alladin to show the default values being used
+    # #
+    # # l2cache_size = IntParam("l2cache_size", 128*1024, format_func=intToShortSize)
+    # # perfect_l1 = IntParam("perfect_l1", 0)
+    # # perfect_bus = IntParam("perfect_bus", 0)
+    # # enable_l2 = IntParam("enable_l2", 0)
+    # ############################################################################
+    # # DMA settings.
+    # ############################################################################
+    # 'pipelined_dma': [0, 1]
+    # #
+    # # Parameters that are not being used
+    # #   copied from alladin to show the default values being used
+    # #
+    # # dma_setup_overhead = IntParam("dma_setup_overhead", 30)
+    # # max_dma_requests = IntParam("max_dma_requests", 40)
+    # # dma_chunk_size = IntParam("dma_chunk_size", 64)
+    # # ready_mode = IntParam("ready_mode", 0)
+    # # dma_multi_channel = IntParam("dma_multi_channel", 0)
+    # # ignore_cache_flush = IntParam("ignore_cache_flush", 0)
+    # # invalidate_on_dma_store = BoolParam("invalidate_on_dma_store", True)
 }
 
 _RESULTS_PARAMS = ['success','cycle', 'power', 'area']
@@ -125,6 +143,7 @@ def process_sample(params):
 
     try:
         result = gem5.main(params)
+
         params_cpy.update(result)
         params_cpy.update({"success":True})
     except:
@@ -160,7 +179,7 @@ def write_to_file(file_name, res_dict, selected_params, add_head=False, overwrit
         f.write("{}\n".format(head_str))
 
     # parameters' values + simulation results
-    values_str = ','.join([list_dict_values(res_dict, selected_params), 
+    values_str = ','.join([list_dict_values(res_dict, selected_params),
         list_dict_values(res_dict, _RESULTS_PARAMS)])
 
     f.write("{}\n".format(values_str))
@@ -236,7 +255,7 @@ def prep_and_run_samples(selected_params, results_file, randomise=True,
 def list_parameters(values_list):
 
     key_cnt = 0
-        
+
     for key, val in dict.items():
         if key_cnt > 0:
             head_str = "{},".format(head_str)
@@ -250,7 +269,7 @@ if __name__ == "__main__":
     NO_WORKERS = 1
     def_results_file = "results.csv"
     single_param_mode = False
-    no_of_random_samples = 10
+    no_of_random_samples = 1
     unique_saples = True
 
     if single_param_mode:
