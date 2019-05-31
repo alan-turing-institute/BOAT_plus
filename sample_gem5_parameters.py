@@ -18,7 +18,6 @@ sys.path.append("./")
 from base import gem5_aladdin_interface as gem5
 
 _AVAILABLE_PARAMS = {
-
     'tlb_page_size': [4096],
     'tlb_entries': [5],
     'tlb_assoc': [4, 8, 16],
