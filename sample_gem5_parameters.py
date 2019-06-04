@@ -17,10 +17,13 @@ sys.path.append("./")
 
 from base import gem5_aladdin_interface as gem5
 
+_CONST_TLB_ASSOC = 'tlb_assoc'
+_CONST_TLB_ENTRIES = 'tlb_entries'
+
 _AVAILABLE_PARAMS = {
-    'tlb_page_size': [4096],
-    'tlb_entries': [5],
-    'tlb_assoc': [4, 8, 16],
+    'tlb_page_size': [4096, 8192],    # in bytes
+    _CONST_TLB_ASSOC: [4, 8, 16],     # tlb associativity
+    _CONST_TLB_ENTRIES: range(17),    # number of tlb entries - it is in a form of multiples of tlb_assoc
     'cycle_time': [4],
     'tlb_max_outstanding_walks': [8],
     'tlb_miss_latency': [13],
@@ -107,13 +110,29 @@ def sampling(selected_params, samples, no_workers, results_file="results.csv"):
 
     """
 
+    # check if _CONST_TLB_ASSOC and _CONST_TLB_ENTRIES are listed
+    try:
+        tlb_assoc_idx = selected_params.index(_CONST_TLB_ASSOC)
+        tlb_entries_idx = selected_params.index(_CONST_TLB_ENTRIES)
+        tlb_entries_calc = True
+    except:
+        tlb_assoc_idx = -1
+        tlb_entries_idx = -1
+        tlb_entries_calc = False
+
     total_samples = len(samples)
 
     samples_splits = []
     for i in range(total_samples):
         params = {}
+
         for p, v in zip(selected_params, samples[i]):
             params[p] = v
+
+        # if _CONST_TLB_ENTRIES and _CONST_TLB_ASSOC are listed as simulated
+        #    parameters recalculate _CONST_TLB_ENTRIES
+        if tlb_entries_calc:
+            params[_CONST_TLB_ENTRIES] = params[_CONST_TLB_ENTRIES] * params[_CONST_TLB_ASSOC]
 
         samples_splits.append(params)
 
@@ -122,7 +141,7 @@ def sampling(selected_params, samples, no_workers, results_file="results.csv"):
 
     result_cnt = 0
     for result in results:
-        #print(result)
+        print(result)
 
         if result_cnt > 0:
             write_to_file(results_file, result, selected_params)
@@ -141,10 +160,17 @@ def process_sample(params):
     params_cpy = copy.copy(params)
 
     try:
-        result = gem5.main(params)
+        # result = gem5.main(params)
+        #
+        # params_cpy.update(result)
+        # params_cpy.update({"success":True})
 
-        params_cpy.update(result)
-        params_cpy.update({"success":True})
+        result = {}
+        params_cpy.update({"success":False})
+
+        # setting result values as false
+        for res_param in _RESULTS_PARAMS:
+            params_cpy.update({res_param:False})
     except:
         result = {}
         params_cpy.update({"success":False})
@@ -268,7 +294,7 @@ if __name__ == "__main__":
     NO_WORKERS = 1
     def_results_file = "results.csv"
     single_param_mode = False
-    no_of_random_samples = 1
+    no_of_random_samples = 10
     unique_saples = True
 
     if single_param_mode:
