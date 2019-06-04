@@ -8,6 +8,7 @@ import argparse
 import os
 import re
 import uuid
+import shutil
 
 # A list of available accelerator parameters
 _AVAILABLE_PARAMS = [
@@ -57,9 +58,6 @@ _GEM5_SWEEPS_DESIGN_PY = 'generate_design_sweeps.py'
 _GEM5_SWEEPS_PATH = os.path.join(_GEM5_PATH, _GEM5_SWEEPS_DIR_NAME)
 _GEM5_SWEEPS_DESIGN_PY_PATH = os.path.join(_GEM5_SWEEPS_PATH, _GEM5_SWEEPS_DESIGN_PY)
 _GEM5_SWEEPS_BENCH_PATH = os.path.join(_GEM5_SWEEPS_PATH, _GEM5_BENCH_DIR_NAME)
-
-_SIM_SWEEP_NAME = "{}{}".format("sim_", str(uuid.uuid4())[:12])
-_SIM_OUTPUT_DIR = os.path.join(_GEM5_SWEEPS_PATH, _SIM_SWEEP_NAME)
 
 # Choosing the benchmark
 _DEFAULT_BENCH = "fft_transpose"
@@ -136,18 +134,26 @@ def collect_result(results_file_path):
 
     return results
 
-def main(sim_params, sim_output_dir=_SIM_OUTPUT_DIR, bench_name=_DEFAULT_BENCH):
+def main(sim_params, sim_output_dir=None, bench_name=_DEFAULT_BENCH,
+         rm_sim_dir=False):
     """Collects results from a simululation run
 
     Args:
         sim_params: parameters for the simulator
         sim_output_dir: directory to save simulator's production runs
         bench_name: benchmark to be run with the simulator
+        rm_sim_dir: flag to rm simulation directory after the simulation
 
     Returns:
         results: a dict mapping simulation results. For example:
           results = {'area': 1094960.0, 'power': 67.5946, 'cycle': 65029}
     """
+
+    if sim_output_dir is None:
+        sim_output_dir = os.path.join(_GEM5_SWEEPS_PATH, "{}{}".format("sim_", str(uuid.uuid4())[:12]))
+
+    if not os.path.isdir(sim_output_dir):
+        os.makedir(sim_output_dir)
 
     # template file
     header_file_name = "{}{}".format("t_", str(uuid.uuid4()))
@@ -185,8 +191,11 @@ def main(sim_params, sim_output_dir=_SIM_OUTPUT_DIR, bench_name=_DEFAULT_BENCH):
 
     # Collecting the results from the simululation run
     results_file_path = os.path.join(bench_path, _BENCH_OUT_FILE)
-
     results = collect_result(results_file_path)
+
+    # clean up sim_output_dir
+    if (rm_sim_dir):
+        shutil.rmtree(sim_output_dir)
 
     return results
 
@@ -218,5 +227,3 @@ if __name__ == "__main__":
             res_file.write(str(0.0))
         else:
             res_file.write(str(results[args.results_key]))
-
-    # TODO: do we need to clean up _SIM_OUTPUT_DIR ?

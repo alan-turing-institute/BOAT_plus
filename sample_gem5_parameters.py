@@ -143,7 +143,7 @@ def process_sample(params):
     params_cpy = copy.copy(params)
 
     try:
-        result = gem5.main(params)
+        result = gem5.main(params, rm_sim_dir=True)
 
         params_cpy.update(result)
         params_cpy.update({"success":True})
