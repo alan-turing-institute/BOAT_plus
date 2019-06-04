@@ -152,8 +152,10 @@ def main(sim_params, sim_output_dir=None, bench_name=_DEFAULT_BENCH,
     if sim_output_dir is None:
         sim_output_dir = os.path.join(_GEM5_SWEEPS_PATH, "{}{}".format("sim_", str(uuid.uuid4())[:12]))
 
+
+
     if not os.path.isdir(sim_output_dir):
-        os.makedir(sim_output_dir)
+        os.makedirs(sim_output_dir)
 
     # template file
     header_file_name = "{}{}".format("t_", str(uuid.uuid4()))

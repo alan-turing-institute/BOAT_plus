@@ -144,9 +144,9 @@ def process_sample(params):
 
     try:
         result = gem5.main(params, rm_sim_dir=True)
-
         params_cpy.update(result)
         params_cpy.update({"success":True})
+
     except:
         result = {}
         params_cpy.update({"success":False})
