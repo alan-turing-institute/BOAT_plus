@@ -124,7 +124,6 @@ def sampling(selected_params, samples, no_workers, results_file="results.csv"):
 
     result_cnt = 0
     for result in results:
-        print(result)
 
         if result_cnt > 0:
             write_to_file(results_file, result, selected_params)
@@ -132,6 +131,8 @@ def sampling(selected_params, samples, no_workers, results_file="results.csv"):
             write_to_file(results_file, result, selected_params, add_head=True, overwrite=True)
 
         result_cnt += 1
+
+        print(result)
 
     return
 
@@ -143,9 +144,17 @@ def process_sample(params):
     params_cpy = copy.copy(params)
 
     try:
-        result = gem5.main(params, rm_sim_dir=True)
-        params_cpy.update(result)
-        params_cpy.update({"success":True})
+        result = {}
+        params_cpy.update({"success":False})
+
+        # setting result values as false
+        for res_param in _RESULTS_PARAMS:
+            params_cpy.update({res_param:False})
+
+
+        # result = gem5.main(params, rm_sim_dir=True)
+        # params_cpy.update(result)
+        # params_cpy.update({"success":True})
 
     except:
         result = {}
