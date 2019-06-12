@@ -144,17 +144,9 @@ def process_sample(params):
     params_cpy = copy.copy(params)
 
     try:
-        result = {}
-        params_cpy.update({"success":False})
-
-        # setting result values as false
-        for res_param in _RESULTS_PARAMS:
-            params_cpy.update({res_param:False})
-
-
-        # result = gem5.main(params, rm_sim_dir=True)
-        # params_cpy.update(result)
-        # params_cpy.update({"success":True})
+        result = gem5.main(params, rm_sim_dir=True)
+        params_cpy.update(result)
+        params_cpy.update({"success":True})
 
     except:
         result = {}
