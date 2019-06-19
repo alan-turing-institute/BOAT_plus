@@ -283,9 +283,14 @@ if __name__ == "__main__":
     NO_WORKERS = 1
     
     single_param_mode = False
-    no_of_random_samples = 5
+    no_of_random_samples = 1000
     unique_saples = True
-    benchmark_list = ["bfs_bulk", "aes_aes"]
+
+    #benchmark_list = ["bfs_bulk", "aes_aes"]
+    benchmark_list = ["aes_aes", "bfs_bulk", "bfs_queue", "fft_strided", 
+        "fft_transpose", "gemm_blocked", "gemm_ncubed", "kmp_kmp", "md_grid", 
+        "md_knn", "nw_nw", "sort_merge", "sort_radix", "spmv_crs", "spmv_ellpack", 
+        "stencil_stencil2d", "stencil_stencil3d", "viterbi_viterbi"]
 
     for benchmark in benchmark_list:
 
