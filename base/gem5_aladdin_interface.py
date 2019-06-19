@@ -54,18 +54,95 @@ _GEM5_PATH = os.path.abspath(os.path.join(os.environ['ALADDIN_HOME'], '..', '..'
 _GEM5_BENCH_DIR_NAME = 'benchmarks'
 _GEM5_SWEEPS_DIR_NAME = 'sweeps'
 _GEM5_SWEEPS_DESIGN_PY = 'generate_design_sweeps.py'
+_GEM5_MACHSUITE_PY = 'machsuite.py'
 
 _GEM5_SWEEPS_PATH = os.path.join(_GEM5_PATH, _GEM5_SWEEPS_DIR_NAME)
 _GEM5_SWEEPS_DESIGN_PY_PATH = os.path.join(_GEM5_SWEEPS_PATH, _GEM5_SWEEPS_DESIGN_PY)
 _GEM5_SWEEPS_BENCH_PATH = os.path.join(_GEM5_SWEEPS_PATH, _GEM5_BENCH_DIR_NAME)
 
 # Choosing the benchmark
-_DEFAULT_BENCH = "fft_transpose"
+#_DEFAULT_BENCH = "fft_transpose"
+_DEFAULT_BENCH = "md_knn"
 _BENCH_OUT_PARTIAL_PATH = "0"
 _BENCH_OUT_FILE = "outputs/stdout"
 
 # Default constants
 _DEFAULT_RESULT_FILE = "gem5_sim_res.txt"
+
+def _find_first_last_lines(file_path, expr):
+    """Reads a file and finds the first and the last lines when 
+    expression occurs.
+    Args:
+        file_path: full path to the input file
+        expr: expression searched
+    Returns:
+        first and last line numbers when the given expression occurs in the file
+    """
+    
+    first = -1
+    last = -1
+    
+    f = open(file_path, "r")
+    
+    line_cnt = 0
+    for f_line in f:
+
+        if expr in f_line:
+            if first == -1:
+                first = line_cnt
+            else:
+                last = line_cnt
+        
+        line_cnt += 1
+    
+    f.close()
+    
+    return first, last
+
+def _comment_uncomment(file_path, expr):
+    """Modifies file by commenting/uncommenting file lines with respect to given expression.
+     Args:
+        file_path: full path to the input file
+        expr: expression searched
+    """
+    
+    first, last = _find_first_last_lines(file_path, expr)
+
+    unique_filename = str(uuid.uuid4())
+    
+    f = open(file_path, "r")
+    f_w = open(unique_filename, "w")
+    
+    line_cnt = 0
+    for f_line in f:
+        
+        # ignore first 5 lines
+        if line_cnt > 4:
+            # uncomment benchmark
+            if ((line_cnt >= first) & (line_cnt <= last)):
+                if f_line.startswith("#"):
+                    new_line = f_line[1:].strip()
+                else:
+                    new_line = f_line.strip()  
+            else:
+                if len(f_line) > 0:
+                    if not f_line.startswith("#"):
+                        new_line = "# " + f_line.strip()
+                    else:
+                        new_line = f_line.strip()
+                else:
+                    new_line = ""            
+        else:
+            new_line = f_line.strip()
+                
+        f_w.write(new_line + "\n")
+                
+        line_cnt += 1
+        
+    f.close()
+    f_w.close()
+    
+    shutil.move(unique_filename, file_path)
 
 def create_header_from_template(params, header_path, sim_output_dir, template_path='template.xe'):
     """Prepares a simulator input file based on a template.
@@ -152,11 +229,13 @@ def main(sim_params, sim_output_dir=None, bench_name=_DEFAULT_BENCH,
     if sim_output_dir is None:
         sim_output_dir = os.path.join(_GEM5_SWEEPS_PATH, "{}{}".format("sim_", str(uuid.uuid4())[:12]))
 
-
-
     if not os.path.isdir(sim_output_dir):
         os.makedirs(sim_output_dir)
-
+    
+     # comment/uncomment required benchmarks
+    machsuitepy_path = os.path.join(_GEM5_SWEEPS_BENCH_PATH, _GEM5_MACHSUITE_PY)
+    _comment_uncomment(machsuitepy_path, bench_name)
+    
     # template file
     header_file_name = "{}{}".format("t_", str(uuid.uuid4()))
     header_file_path = os.path.join(_GEM5_SWEEPS_BENCH_PATH, header_file_name)
@@ -184,6 +263,7 @@ def main(sim_params, sim_output_dir=None, bench_name=_DEFAULT_BENCH,
 
     # Running the bechmark with the simulator
     bench_path = os.path.join(sim_output_dir, bench_name, _BENCH_OUT_PARTIAL_PATH)
+
     os.chdir(bench_path)
 
     # Performing the benchmark

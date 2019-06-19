@@ -79,7 +79,7 @@ _AVAILABLE_PARAMS = {
 
 _RESULTS_PARAMS = ['success','cycle', 'power', 'area']
 
-def sampling(selected_params, samples, no_workers, results_file="results.csv"):
+def _sampling(selected_params, samples, no_workers, benchmark, results_file="results.csv"):
     """Performs sampling.
 
     Performs sampling over the given samples. The method utilizes a pool of
@@ -89,8 +89,9 @@ def sampling(selected_params, samples, no_workers, results_file="results.csv"):
         selected_params: labels of the selected parameters
         samples: a matrix with parameter values
         no_workers: a number of workers in the pool
-        results_file:
-
+        benchmark: name of the bechmark from the Machsuite
+        results_file: output file
+        
     """
 
     # check if _CONST_TLB_ASSOC and _CONST_TLB_ENTRIES are listed
@@ -120,7 +121,8 @@ def sampling(selected_params, samples, no_workers, results_file="results.csv"):
         samples_splits.append(params)
 
     pool = Pool(processes=no_workers)
-    results = pool.imap(process_sample, samples_splits)
+
+    results = pool.imap(process_sample_wrapper, zip(samples_splits, [benchmark] * len(samples_splits)))
 
     result_cnt = 0
     for result in results:
@@ -132,19 +134,28 @@ def sampling(selected_params, samples, no_workers, results_file="results.csv"):
 
         result_cnt += 1
 
-        print(result)
+        print(result_cnt, result)
 
     return
 
-def process_sample(params):
-    """Processes parameters with gem5-aladdin
+def process_sample_wrapper(args):
+    return _process_sample(*args)
 
+def _process_sample(params, benchmark):
+    """Processes parameters with gem5-aladdin
+    Args:
+        params: a list of parameters to be simulated
+        benchmark: name of the bechmark from the Machsuite
+    Returns:
+        params_cpy: appended list of parameters with the outcome of simulation
     """
 
     params_cpy = copy.copy(params)
 
+    params_cpy.update({"benchmark":benchmark})
+
     try:
-        result = gem5.main(params, rm_sim_dir=True)
+        result = gem5.main(params, rm_sim_dir=True, bench_name=benchmark)
         params_cpy.update(result)
         params_cpy.update({"success":True})
 
@@ -214,14 +225,15 @@ def list_dict_values(res_dict, keyword_list):
 
     return value_str
 
-def prep_and_run_samples(selected_params, results_file, randomise=True,
-    no_of_random_samples=None, unique_saples=False):
+def _prep_and_run_samples(selected_params, results_file, benchmark, 
+    randomise=True, no_of_random_samples=None, unique_saples=False):
 
     """Prepares and runs samples
 
     Args:
-        selected_params:
-        results_file:
+        selected_params: a list of parameters to be simulated
+        results_file: output file
+        benchmark: name of the bechmark from the Machsuite
         randomise: a flag to randomise grid lines
         no_of_random_samples: a fixed number of samples to be evaluated
         unique_saples: enforce uniqueness of samples
@@ -252,7 +264,7 @@ def prep_and_run_samples(selected_params, results_file, randomise=True,
     print("Total number of samples: {}".format(str(len(grid))))
 
     # performs random sampling
-    sampling(selected_params, grid, NO_WORKERS, results_file)
+    _sampling(selected_params, grid, NO_WORKERS, benchmark, results_file=results_file)
 
 def list_parameters(values_list):
 
@@ -269,26 +281,34 @@ if __name__ == "__main__":
 
     # At the moment it is impossible to run multiple gem5-aladdin instances, thus NO_WORKERS = 1
     NO_WORKERS = 1
-    def_results_file = "results.csv"
+    
     single_param_mode = False
-    no_of_random_samples = 10
+    no_of_random_samples = 5
     unique_saples = True
+    benchmark_list = ["bfs_bulk", "aes_aes"]
 
-    if single_param_mode:
+    for benchmark in benchmark_list:
 
-        for avail_param_key in _AVAILABLE_PARAMS.keys():
+        print("-" * 50)
+        print("Performing sampling on benchmark: ", benchmark)
+        print("-" * 50)
 
-            selected_params = [avail_param_key]
-            results_file = avail_param_key + "_" + def_results_file
+        def_results_file = benchmark.strip() + "_results.csv"
 
-            prep_and_run_samples(selected_params, results_file)
+        if single_param_mode:
 
-    else:
-        # TODO: this is not the correct place to list parameters
-        selected_params = list(_AVAILABLE_PARAMS.keys())
-        #selected_params = ['cache_size', 'cache_assoc']
+            for avail_param_key in _AVAILABLE_PARAMS.keys():
 
-        prep_and_run_samples(selected_params, def_results_file,
-                no_of_random_samples=no_of_random_samples, unique_saples=unique_saples)
+                selected_params = [avail_param_key]
+                results_file = avail_param_key + "_" + def_results_file
+
+                _prep_and_run_samples(selected_params, results_file, benchmark)
+
+        else:
+            # TODO: this is not the correct place to list parameters
+            selected_params = list(_AVAILABLE_PARAMS.keys())
+
+            _prep_and_run_samples(selected_params, def_results_file, benchmark,
+                    no_of_random_samples=no_of_random_samples, unique_saples=unique_saples)
 
     print("Finished.")
