@@ -91,7 +91,7 @@ def _sampling(selected_params, samples, no_workers, benchmark, results_file="res
         no_workers: a number of workers in the pool
         benchmark: name of the bechmark from the Machsuite
         results_file: output file
-        
+
     """
 
     # check if _CONST_TLB_ASSOC and _CONST_TLB_ENTRIES are listed
@@ -154,7 +154,9 @@ def _process_sample(params, benchmark):
 
     params_cpy.update({"benchmark":benchmark})
 
+    time_st = time.time()
     try:
+
         result = gem5.main(params, rm_sim_dir=True, bench_name=benchmark)
         params_cpy.update(result)
         params_cpy.update({"success":True})
@@ -166,6 +168,9 @@ def _process_sample(params, benchmark):
         # setting result values as false
         for res_param in _RESULTS_PARAMS:
             params_cpy.update({res_param:False})
+
+    time_elapsed = time.time() - time_st
+    params_cpy.update({"run_time":time_elapsed})
 
     return params_cpy
 
@@ -225,7 +230,7 @@ def list_dict_values(res_dict, keyword_list):
 
     return value_str
 
-def _prep_and_run_samples(selected_params, results_file, benchmark, 
+def _prep_and_run_samples(selected_params, results_file, benchmark,
     randomise=True, no_of_random_samples=None, unique_saples=False):
 
     """Prepares and runs samples
@@ -281,16 +286,22 @@ if __name__ == "__main__":
 
     # At the moment it is impossible to run multiple gem5-aladdin instances, thus NO_WORKERS = 1
     NO_WORKERS = 1
-    
+
     single_param_mode = False
-    no_of_random_samples = 1000
+    no_of_random_samples = 10
     unique_saples = True
 
-    #benchmark_list = ["bfs_bulk", "aes_aes"]
-    benchmark_list = ["aes_aes", "bfs_bulk", "bfs_queue", "fft_strided", 
-        "fft_transpose", "gemm_blocked", "gemm_ncubed", "kmp_kmp", "md_grid", 
-        "md_knn", "nw_nw", "sort_merge", "sort_radix", "spmv_crs", "spmv_ellpack", 
-        "stencil_stencil2d", "stencil_stencil3d", "viterbi_viterbi"]
+    # The list of Machsuite benchmarks
+    # benchmark_list = ["aes_aes", "bfs_bulk", "bfs_queue", "fft_strided",
+    #     "fft_transpose", "gemm_blocked", "gemm_ncubed", "kmp_kmp", "md_grid",
+    #     "md_knn", "nw_nw", "sort_merge", "sort_radix", "spmv_crs", "spmv_ellpack",
+    #     "stencil_stencil2d", "stencil_stencil3d", "viterbi_viterbi"]
+
+
+    benchmark_list = ["aes_aes", "bfs_bulk", "bfs_queue", "fft_strided",
+        "fft_transpose", "kmp_kmp", "md_grid",
+        "md_knn", "nw_nw", "sort_merge", "spmv_crs", "spmv_ellpack",
+        "stencil_stencil2d", "stencil_stencil3d"]
 
     for benchmark in benchmark_list:
 
