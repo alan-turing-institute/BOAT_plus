@@ -150,6 +150,8 @@ def _process_sample(params, benchmark):
         params_cpy: appended list of parameters with the outcome of simulation
     """
 
+    print(params)
+
     params_cpy = copy.copy(params)
 
     params_cpy.update({"benchmark":benchmark})
