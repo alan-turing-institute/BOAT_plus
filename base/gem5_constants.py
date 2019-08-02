@@ -23,6 +23,13 @@ _TARGET_FUNC_COEF = {
     _CONST_P5: {_CONST_C1: 0.01, _CONST_C2: 0.99}}
 
 ### fft_transpose 1000 random search results
-_CONST_MAX_AREA = float(2515230.0)
-_CONST_MAX_CYCLE = float(62966.0)
-_CONST_MAX_POWER = float(225.118)
+# _CONST_MAX_AREA = float(2515230.0)
+# _CONST_MAX_CYCLE = float(62966.0)
+# _CONST_MAX_POWER = float(225.118)
+
+### eas_eas 1000 random search results (Study 14)
+_CONST_MAX_AREA = float(1155350)
+_CONST_MAX_CYCLE = float(23282)
+_CONST_MAX_POWER = float(69.5747)
+
+		

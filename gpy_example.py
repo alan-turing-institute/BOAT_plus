@@ -17,15 +17,43 @@ from base import gem5_aladdin_interface as gem5
 from base import gem5_results
 from base import gem5_constants
     
-_BENCHMARK = "fft_transpose"
+_BENCHMARK = "aes_aes"
 _TARGET = gem5_constants._CONST_P1
 
-_BDS = [{'name': 'cache_size', 'type': 'discrete', 'domain': (16384, 32768, 65536, 131072)}, 
-        {'name': 'cycle_time', 'type': 'discrete', 'domain': (1, 2, 3, 4, 5)},
-        {'name': 'pipelining', 'type': 'discrete', 'domain': (0, 1)},
-        {'name': 'tlb_hit_latency', 'type': 'discrete', 'domain': (1, 2, 3, 4)}]
+from numpy.random import seed
+seed(123)
+
+
+_GEM5_DICT_CACHE_SIZE = {0:16384, 1:32768, 2:65536, 3:131072}
+_GEM5_DICT_CACHE_ASSOC = {0:1, 1:2, 2:4, 3:8, 4:16}
+_GEM5_DICT_CACHE_LINE_SZ = {0:16, 1:32, 2:64}
+
+# _GEM5_DICT_PIPELINING = {0:0, 1:1}
+# _GEM5_DICT_TLB_BANDWIDTH = {0:1, 1:2}
+# _GEM5_DICT_CACHE_HIT_LATENCY = {0:1, 1:2, 2:3, 3:4}
+# _GEM5_DICT_CYCLE_TIME = {0:1, 1:2, 2:3, 3:4, 4:5}
+# _GEM5_DICT_TLB_HIT_LATENCY = {0:1, 1:2, 2:3, 3:4}
+
+
+    # {'name': 'pipelining', 'type': 'categorical', 'domain': tuple(_GEM5_DICT_PIPELINING.keys())},
+    # {'name': 'tlb_bandwidth', 'type': 'categorical', 'domain': tuple(_GEM5_DICT_TLB_BANDWIDTH.keys())},
+    # {'name': 'cache_hit_latency', 'type': 'categorical', 'domain': tuple(_GEM5_DICT_CACHE_HIT_LATENCY.keys())}, 
+    # {'name': 'cycle_time', 'type': 'categorical', 'domain': tuple(_GEM5_DICT_CYCLE_TIME.keys())},
+    # {'name': 'tlb_hit_latency', 'type': 'categorical', 'domain': tuple(_GEM5_DICT_TLB_HIT_LATENCY.keys())}
+
+_BDS = [
+    {'name': 'cache_size', 'type': 'categorical', 'domain': tuple(_GEM5_DICT_CACHE_SIZE.keys())}, 
+    {'name': 'cache_assoc', 'type': 'categorical', 'domain': tuple(_GEM5_DICT_CACHE_ASSOC.keys())}, 
+    {'name': 'cache_line_sz', 'type': 'categorical', 'domain': tuple(_GEM5_DICT_CACHE_LINE_SZ.keys())}, 
+    {'name': 'pipelining', 'type': 'discrete', 'domain': (0, 1)},
+    {'name': 'tlb_bandwidth', 'type': 'discrete', 'domain': (1, 2)},
+    {'name': 'cache_hit_latency', 'type': 'discrete', 'domain': (1, 2, 3, 4)}, 
+    {'name': 'cycle_time', 'type': 'discrete', 'domain': (1, 2, 3, 4, 5)},
+    {'name': 'tlb_hit_latency', 'type': 'discrete', 'domain': (1, 2, 3, 4)}
+    ]
 
 _RESULTS_FILE = "results.csv"
+
 
 def write_to_file(file_name, bds, parameters=None, success=None, result=None, add_head=False, overwrite=False):
     """Writes results to a file
@@ -79,11 +107,30 @@ if __name__ == "__main__":
         # setting gem5-aladdin parameters
         params = {}
         for idx, bd in enumerate(_BDS):
-            params[bd['name']] = int(parameters[0][idx])
-
+            param_name = bd['name']
+            if param_name == "cache_size":
+                value = _GEM5_DICT_CACHE_SIZE[int(parameters[0][idx])]
+            elif param_name == "cache_assoc":
+                value = _GEM5_DICT_CACHE_ASSOC[int(parameters[0][idx])]
+            elif param_name == "cache_line_sz":
+                value = _GEM5_DICT_CACHE_LINE_SZ[int(parameters[0][idx])]
+            # elif param_name == "pipelining":
+            #     value = _GEM5_DICT_PIPELINING[int(parameters[0][idx])]
+            # elif param_name == "tlb_bandwidth":
+            #     value = _GEM5_DICT_TLB_BANDWIDTH[int(parameters[0][idx])]
+            # elif param_name == "cache_hit_latency":
+            #     value = _GEM5_DICT_CACHE_HIT_LATENCY[int(parameters[0][idx])]
+            # elif param_name == "cycle_time":
+            #     value = _GEM5_DICT_CYCLE_TIME[int(parameters[0][idx])]
+            # elif param_name == "tlb_hit_latency":
+            #     value = _GEM5_DICT_TLB_HIT_LATENCY[int(parameters[0][idx])]
+            else:
+                value = int(parameters[0][idx])
+            
+            params[param_name] = value
+        
         gem5_result = gem5.main(params, rm_sim_dir=True, bench_name=_BENCHMARK)
 
-        
         try:
             success = 1
             result = gem5_results.get_target_value(gem5_result, _TARGET)
@@ -101,11 +148,10 @@ if __name__ == "__main__":
                                         domain=_BDS,
                                         model_type='GP',
                                         acquisition_type ='EI',
-                                        acquisition_jitter = 0.01,
                                         exact_feval=True,
                                         maximize=True)
 
-    optimizer.run_optimization(max_iter=20)
+    optimizer.run_optimization(max_iter=50, verbosity=True, eps=-1)
 
     optimizer.plot_acquisition(filename = "acquisition.png")
 
