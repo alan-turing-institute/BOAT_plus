@@ -149,9 +149,10 @@ if __name__ == "__main__":
                                         model_type='GP',
                                         acquisition_type ='EI',
                                         exact_feval=True,
-                                        maximize=True)
+                                        maximize=True,
+                                        de_duplication=True)
 
-    optimizer.run_optimization(max_iter=50, verbosity=True, eps=-1)
+    optimizer.run_optimization(max_iter=10, verbosity=True)
 
     optimizer.plot_acquisition(filename = "acquisition.png")
 
